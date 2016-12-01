@@ -19,7 +19,7 @@ MAX_MOD = 200
 TOTAL_FRONT = False
 #
 # some joke values, hidden from public view
-ANTI_ROSS = False
+ANTI_ROSS = True
 #PLUGINS = [
 #    'slackbot.plugins',
 #    'mybot.plugins',
@@ -80,12 +80,13 @@ def roll(message):
     if (re.search('(\d+)?[dD](\d+[\+-])?\d+$',tx(message))): 
         resString = None
         total = 0
-        print("Results of tx(message): " + tx(message))
-        print("Findall pre-pop: ")
-        print(re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)))
+        #print("Results of tx(message): " + tx(message))
+        #print("Findall pre-pop: ")
+        #print(re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)))
         catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
-        print("catch: ")
-        print(catch)
+        #print("catch: ")
+        #print(catch)
+        legend = 'Rolls: '
 
         if (getDice(catch)):
             if (getDice(catch) == 0):
@@ -107,15 +108,17 @@ def roll(message):
             else:
                 results = []
                 for i in range(0,getDice(catch)):
-                    roll = random.randrange(1,getSides(catch))
+                    roll = random.randrange(1,getSides(catch)+1)
                     results.append(roll)
                     total += roll
                 resString = ', '.join(map(str,results))
+                if(total == getDice(catch)*getSides(catch)):
+                    legend = 'Legendary rolls! '
                 if (getBuff(catch) == '+'):
                     total += getMod(catch)
                 elif (getBuff(catch) == '-'):
                     total -= getMod(catch)
-                resString = 'Rolls: ' + resString
+                resString = legend + resString
         else:
             if (getSides(catch) == 0):
                 message.reply("Why do you hate me?")
@@ -128,14 +131,26 @@ def roll(message):
             elif (getBuff(catch) and getMod(catch) > MAX_MOD):
                 message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
             else:
-                result = random.randrange(1,getSides(catch))
+                if(ANTI_ROSS and getSides(catch)==20 and re.search('[rR][oO][sS][sS]',tx(message))):
+                    result = 20
+                #elif (getSides(catch)==2 and not getBuff(catch)):
+                #    if (random.randrange(1,3) == 1):
+                #        result = 'Heads!'
+                #    else:
+                #        result = 'Tails!'
+                else:
+                    result = random.randrange(1,getSides(catch)+1)
                 total += result
+                if (total == getSides(catch)):
+                    legend = "Legendary roll! "
+                else:
+                    legend = "Roll: "
                 if (getBuff(catch) == '+'):
                     total += getMod(catch)
                 elif (getBuff(catch) == '-'):
                     total -= getMod(catch)
-                if (getBuff(catch)):
-                    resString = 'Roll: ' + str(result)
+                if (getBuff(catch) or total == getSides(catch)):
+                    resString = legend + str(result)
                 else:
                     resString = str(result)
         if (resString):
@@ -145,8 +160,8 @@ def roll(message):
                 else:
                     resString = resString + '. Total: ' + str(total)
             message.reply("Your results:   " + resString)
-    else:
-        print ("Unmatching message caught.") # this is just for debugging.
+    #else:
+    #    print ("Unmatching message caught.") # this is just for debugging.
 ##
  
 
