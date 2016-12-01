@@ -15,6 +15,8 @@ DEFAULT_REPLY = "Sorry but I'm a complete tosser"
 ERRORS_TO = 'jeremy'
 MAX_DICE = 200  # just to prevent insane scenarios
 MAX_SIDES = 9002 #
+MAX_MOD = 200
+TOTAL_FRONT = False
 #
 # some joke values, hidden from public view
 ANTI_ROSS = False
@@ -30,23 +32,31 @@ ANTI_ROSS = False
 def tx(message):
     return message._body.get('text')
 ###
-def n1(message):
-    return re.findall('[\d]+',re.findall('[\d]+[dD]',message).pop(0)).pop(0)
+def getDice(message,default=None):
+    if (message[0]):
+        return int(message[0])
+    else:
+        return default
 ###
-def n2(message):
-    return re.findall('[\d]+',re.findall('[dD][\d]+',message).pop(0)).pop(0)
+def getSides(message,default=None):
+    if (message[2]):
+        return int(message[2])
+    elif (message[4]):
+        return int(message[4])
+    else:
+        return default
 ###
-def n3(message):
-    return re.findall('[\d]+',re.findall('[\+-][\d]+$',message).pop(0)).pop(0)
-def getDice(message):
-    return int(n1(message))
+def getMod(message,default=None):
+    if (message[3] and message[4]):
+        return int(message[4])
+    else:
+        return default
 ###
-def getSides(message):
-    return int(n2(message))
-###
-def getMod(message):
-    return int(n3(message))
-###
+def getBuff(message,default=None):
+    if (message[3]):
+        return (message[3])
+    else:
+        return default
 #####
 
 ### custom plugins. let's see if this actually works.
@@ -64,80 +74,81 @@ def love(message):
 def summerchild(message):
     message.reply('http://i.imgur.com/qsSj2L6.gif')
 
-### We want to be able to do a /\d+[dD]\d+/ scenario as well as one without preceding digits.
-##@listen_to('[dD][\d]+$')
-##def roll(message):
-##    resString = None
-##    if (re.search('[\d]+[dD][\d]+$',tx(message))):
-##        if(re.search('-[\d]+[dD][\d]+$',tx(message))):
-##            message.reply("I can't roll a negative number of dice!")
-##        elif(getDice(tx(message) == 0):
-##            message.reply("You're hilarious.")
-##        elif(getDice(tx(message) == 1):
-##            message.reply("Why even bother specifying one die? Are you crazy?")
-##        elif(getDice(tx(message) > MAX_DICE):
-##            message.reply("That's a few more than I'm willing to roll. My hand's aren't nearly big enough!")
-##        elif(getSides(tx(message) == 0):
-##            message.reply("Not really happy about this.")
-##        elif(getSides(tx(message) == 1):
-##            message.reply("yeah yeah whatever")
-##        elif(getSides(tx(message)) > MAX_SIDES):
-##            message.reply("That's basically a ball at this point.")
-##        else:
-##            results = []
-##            for i in range(0,getDice(tx(message)):
-##                results.append(random.randrange(1,getSides(tx(message)))
-##            resString = ', '.join(map(str,results))
-##    else:
-##        if(getSides(tx(message) == 0):
-##            message.reply("I LITERALLY CAN'T.")
-##        elif(getSides(tx(message) == 1):
-##            message.reply("I _could_, but I won't.")
-##        elif(getSides(tx(message) > MAX_SIDES):
-##            message.reply("That's basically a ball at this point.")
-##        else:
-##            resString = str(random.randrange(1,getSides(tx(message)))
-##    if(resString):
-##        message.reply("Your results: " + resString)
-
 # Revamped roll function. Checking for + and - modifiers at the end. Maybe separate functions per scenario?
-@listen_to('(\d+)?[dD](\d+[\+-])?\d+$')
+@listen_to('[dD]\d+')
 def roll(message):
-    resString = None
-    total = 0
-    catch = re.findall('(\d+)?[dD](\d+[\+-])?\d+$',tx(message)).pop(0)
+    if (re.search('(\d+)?[dD](\d+[\+-])?\d+$',tx(message))): 
+        resString = None
+        total = 0
+        print("Results of tx(message): " + tx(message))
+        print("Findall pre-pop: ")
+        print(re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)))
+        catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
+        print("catch: ")
+        print(catch)
 
-    if (re.search('\d+[dD]',catch)):
-        if (getDice(catch) == 0):
-            message.reply("You're hilarious.")
-        elif (getDice(catch) == 1):
-            message.reply("Why even bother rolling one die? Are you crazy?")
-        elif (getDice(catch) > MAX_DICE):
-            message.reply("That's a few more than I'm willing to roll. My hands aren't nearly big enough!")
-        elif (getSides(catch) == 0):
-            message.reply("Why do you hate me?")
-        elif (getSides(catch) == 1):
-            message.reply("1. The answer is 1. I don't care what you were expecting.")
-        elif (getSides(catch) > MAX_SIDES):
-            message.reply("That's basically a ball at this point.")
-        elif (re.search('[\+-]',catch) and getMod(catch) == 0):
-            message.reply("This joke is really overplayed.")
-        elif (re.search('[\+-]',catch) and getMod(catch) > MAX_MOD):
-            message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
+        if (getDice(catch)):
+            if (getDice(catch) == 0):
+                message.reply("You're hilarious.")
+            elif (getDice(catch) == 1):
+                message.reply("Why even bother rolling one die? Are you crazy?")
+            elif (getDice(catch) > MAX_DICE):
+                message.reply("That's a few more than I'm willing to roll. My hands aren't nearly big enough!")
+            elif (getSides(catch) == 0):
+                message.reply("Why do you hate me?")
+            elif (getSides(catch) == 1):
+                message.reply("1. The answer is 1. I don't care what you were expecting.")
+            elif (getSides(catch) > MAX_SIDES):
+                message.reply("That's basically a ball at this point.")
+            elif (getBuff(catch) and getMod(catch) == 0):
+                message.reply("This joke is really overplayed.")
+            elif (getBuff(catch) and getMod(catch) > MAX_MOD):
+                message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
+            else:
+                results = []
+                for i in range(0,getDice(catch)):
+                    roll = random.randrange(1,getSides(catch))
+                    results.append(roll)
+                    total += roll
+                resString = ', '.join(map(str,results))
+                if (getBuff(catch) == '+'):
+                    total += getMod(catch)
+                elif (getBuff(catch) == '-'):
+                    total -= getMod(catch)
+                resString = 'Rolls: ' + resString
         else:
-            results = []
-            for i in range(0,getDice(catch)):
-                roll = random.randrange(1,getSides(catch))
-                results.append(roll)
-                total += roll
-            resString = ', '.join(map(str,results))
-            if (re.search('\+',catch)):
-                total += getMod(catch)
-            elif (re.search('-',catch)):
-                total -= getMod(catch)
-            resString = 'Total: ' + str(total) + '. Rolls: ' + resString
-
-
+            if (getSides(catch) == 0):
+                message.reply("Why do you hate me?")
+            elif (getSides(catch) == 1):
+                message.reply("1. The answer is 1. I don't care what you were expecting.")
+            elif (getSides(catch) > MAX_SIDES):
+                message.reply("That's basically a ball at this point.")
+            elif (getBuff(catch) and getMod(catch) == 0):
+                message.reply("This joke is really overplayed.")
+            elif (getBuff(catch) and getMod(catch) > MAX_MOD):
+                message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
+            else:
+                result = random.randrange(1,getSides(catch))
+                total += result
+                if (getBuff(catch) == '+'):
+                    total += getMod(catch)
+                elif (getBuff(catch) == '-'):
+                    total -= getMod(catch)
+                if (getBuff(catch)):
+                    resString = 'Roll: ' + str(result)
+                else:
+                    resString = str(result)
+        if (resString):
+            if (getBuff(catch) or getDice(catch)):
+                if (TOTAL_FRONT):
+                    resString = 'Total: ' + str(total) + '. ' + resString
+                else:
+                    resString = resString + '. Total: ' + str(total)
+            message.reply("Your results:   " + resString)
+    else:
+        print ("Unmatching message caught.") # this is just for debugging.
+##
+ 
 
 #    message.reply('You said: ' + message._body.get('text'))
 #    print(tx(message))
