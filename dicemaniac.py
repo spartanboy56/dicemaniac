@@ -86,6 +86,7 @@ def roll(message):
         catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
         #print("catch: ")
         #print(catch)
+        legend = 'Rolls: '
 
         if (getDice(catch)):
             if (getDice(catch) == 0):
@@ -107,15 +108,17 @@ def roll(message):
             else:
                 results = []
                 for i in range(0,getDice(catch)):
-                    roll = random.randrange(1,getSides(catch))
+                    roll = random.randrange(1,getSides(catch)+1)
                     results.append(roll)
                     total += roll
                 resString = ', '.join(map(str,results))
+                if(total == getDice(catch)*getSides(catch)):
+                    legend = 'Legendary rolls! '
                 if (getBuff(catch) == '+'):
                     total += getMod(catch)
                 elif (getBuff(catch) == '-'):
                     total -= getMod(catch)
-                resString = 'Rolls: ' + resString
+                resString = legend + resString
         else:
             if (getSides(catch) == 0):
                 message.reply("Why do you hate me?")
@@ -130,15 +133,24 @@ def roll(message):
             else:
                 if(ANTI_ROSS and getSides(catch)==20 and re.search('[rR][oO][sS][sS]',tx(message))):
                     result = 20
+                #elif (getSides(catch)==2 and not getBuff(catch)):
+                #    if (random.randrange(1,3) == 1):
+                #        result = 'Heads!'
+                #    else:
+                #        result = 'Tails!'
                 else:
-                    result = random.randrange(1,getSides(catch))
+                    result = random.randrange(1,getSides(catch)+1)
                 total += result
+                if (total == getSides(catch)):
+                    legend = "Legendary roll! "
+                else:
+                    legend = "Roll: "
                 if (getBuff(catch) == '+'):
                     total += getMod(catch)
                 elif (getBuff(catch) == '-'):
                     total -= getMod(catch)
-                if (getBuff(catch)):
-                    resString = 'Roll: ' + str(result)
+                if (getBuff(catch) or total == getSides(catch)):
+                    resString = legend + str(result)
                 else:
                     resString = str(result)
         if (resString):
