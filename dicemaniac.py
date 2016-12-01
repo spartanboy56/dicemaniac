@@ -19,7 +19,7 @@ MAX_MOD = 200
 TOTAL_FRONT = False
 #
 # some joke values, hidden from public view
-ANTI_ROSS = False
+ANTI_ROSS = True
 #PLUGINS = [
 #    'slackbot.plugins',
 #    'mybot.plugins',
@@ -80,12 +80,12 @@ def roll(message):
     if (re.search('(\d+)?[dD](\d+[\+-])?\d+$',tx(message))): 
         resString = None
         total = 0
-        print("Results of tx(message): " + tx(message))
-        print("Findall pre-pop: ")
-        print(re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)))
+        #print("Results of tx(message): " + tx(message))
+        #print("Findall pre-pop: ")
+        #print(re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)))
         catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
-        print("catch: ")
-        print(catch)
+        #print("catch: ")
+        #print(catch)
 
         if (getDice(catch)):
             if (getDice(catch) == 0):
@@ -128,7 +128,10 @@ def roll(message):
             elif (getBuff(catch) and getMod(catch) > MAX_MOD):
                 message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
             else:
-                result = random.randrange(1,getSides(catch))
+                if(ANTI_ROSS and getSides(catch)==20 and re.search('[rR][oO][sS][sS]',tx(message))):
+                    result = 20
+                else:
+                    result = random.randrange(1,getSides(catch))
                 total += result
                 if (getBuff(catch) == '+'):
                     total += getMod(catch)
@@ -145,8 +148,8 @@ def roll(message):
                 else:
                     resString = resString + '. Total: ' + str(total)
             message.reply("Your results:   " + resString)
-    else:
-        print ("Unmatching message caught.") # this is just for debugging.
+    #else:
+    #    print ("Unmatching message caught.") # this is just for debugging.
 ##
  
 
