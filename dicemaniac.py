@@ -74,19 +74,51 @@ def love(message):
 def summerchild(message):
     message.reply('http://i.imgur.com/qsSj2L6.gif')
 
+@listen_to('relevant xkcd', re.IGNORECASE)
+def relevant(message):
+    message.reply('I no work yet!')
+
+@listen_to('morning' or 'good morning', re.IGNORECASE)
+def morning(message):
+    message.reply('Good morning!')
+
+
+
 # Revamped roll function. Checking for + and - modifiers at the end. Maybe separate functions per scenario?
 @listen_to('[dD]\d+')
 def roll(message):
     if (re.search('(\d+)?[dD](\d+[\+-])?\d+$',tx(message))): 
         resString = None
         total = 0
-        #print("Results of tx(message): " + tx(message))
-        #print("Findall pre-pop: ")
-        #print(re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)))
         catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
+        ONE_TRIG = False
+        
+
+        legend = 'Rolls: '
+#Created seperate roller function because it was repeated code
+        def roller(dice, sides, buff, mod, total, legend):
+            results = []
+            for i in range(0,dice):
+                roll = random.randrange(1,sides+1)
+                results.append(roll)
+                total += roll
+            resString = ', '.join(map(str,results))
+            if(total == dice*sides):
+                legend = 'Legendary rolls! '
+            if (buff == '+'):
+                total += mod
+            elif (buff == '-'):
+                total -= mod
+            resString = legend + resString
+            return resString,total,legend
+
+
+
+
+
         #print("catch: ")
         #print(catch)
-        legend = 'Rolls: '
+        
 
         if (getDice(catch)):
             if (getDice(catch) == 0):
@@ -98,7 +130,9 @@ def roll(message):
             elif (getSides(catch) == 0):
                 message.reply("Why do you hate me?")
             elif (getSides(catch) == 1):
-                message.reply("1. The answer is 1. I don't care what you were expecting.")
+                ONE_TRIG = True
+                resString, total, legend = roller(getDice(catch), getSides(catch), getBuff(catch), getMod(catch), total, legend)
+                message.reply("1. The answer is 1. I don't care what you were expecting....But here: " + resString + " Total: " + str(total))
             elif (getSides(catch) > MAX_SIDES):
                 message.reply("That's basically a ball at this point.")
             elif (getBuff(catch) and getMod(catch) == 0):
@@ -106,24 +140,14 @@ def roll(message):
             elif (getBuff(catch) and getMod(catch) > MAX_MOD):
                 message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
             else:
-                results = []
-                for i in range(0,getDice(catch)):
-                    roll = random.randrange(1,getSides(catch)+1)
-                    results.append(roll)
-                    total += roll
-                resString = ', '.join(map(str,results))
-                if(total == getDice(catch)*getSides(catch)):
-                    legend = 'Legendary rolls! '
-                if (getBuff(catch) == '+'):
-                    total += getMod(catch)
-                elif (getBuff(catch) == '-'):
-                    total -= getMod(catch)
-                resString = legend + resString
+                resString, total, legend = roller(getDice(catch), getSides(catch), getBuff(catch), getMod(catch), total, legend)
         else:
             if (getSides(catch) == 0):
                 message.reply("Why do you hate me?")
             elif (getSides(catch) == 1):
-                message.reply("1. The answer is 1. I don't care what you were expecting.")
+                ONE_TRIG = True
+                resString, total, legend = roller(getDice(catch), getSides(catch), getBuff(catch), getMod(catch), total, legend)
+                message.reply("1. The answer is 1. I don't care what you were expecting....But here: " + resString + " Total: " + str(total))
             elif (getSides(catch) > MAX_SIDES):
                 message.reply("That's basically a ball at this point.")
             elif (getBuff(catch) and getMod(catch) == 0):
@@ -139,21 +163,8 @@ def roll(message):
                 #    else:
                 #        result = 'Tails!'
                 else:
-                    result = random.randrange(1,getSides(catch)+1)
-                total += result
-                if (total == getSides(catch)):
-                    legend = "Legendary roll! "
-                else:
-                    legend = "Roll: "
-                if (getBuff(catch) == '+'):
-                    total += getMod(catch)
-                elif (getBuff(catch) == '-'):
-                    total -= getMod(catch)
-                if (getBuff(catch) or total == getSides(catch)):
-                    resString = legend + str(result)
-                else:
-                    resString = str(result)
-        if (resString):
+                    resString, total, legend = roller(getDice(catch), getSides(catch), getBuff(catch), getMod(catch), total, legend)
+        if (resString and ONE_TRIG == False):
             if (getBuff(catch) or getDice(catch)):
                 if (TOTAL_FRONT):
                     resString = 'Total: ' + str(total) + '. ' + resString
