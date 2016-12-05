@@ -26,7 +26,7 @@ ANTI_ROSS = True
 #    'mybot.plugins',
 #]
 #
-owm = pyowm.OWM('6a47e3b888d6f1962270697e72ed9f99')
+
 
 
 ######
@@ -84,16 +84,6 @@ def relevant(message):
 @listen_to('morning' or 'good morning', re.IGNORECASE)
 def morning(message):
     message.reply('Good morning!')
-
-@listen_to('weather', re.IGNORECASE)
-def weather(message):
-    if(re.search('boston', tx(message))):    
-        observation = owm.weather_at_place('Boston,us')
-        w = observation.get_weather()
-        #print(str(w.get_temperature('celsius')))
-        message.reply(str(w.get_temperature('celsius')))
-    else:
-        message.reply('Boston not received!')
 
 # Revamped roll function. Checking for + and - modifiers at the end. Maybe separate functions per scenario?
 @listen_to('[dD]\d+')
