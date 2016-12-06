@@ -20,7 +20,7 @@ MAX_MOD = 200
 TOTAL_FRONT = False
 #
 # some joke values, hidden from public view
-ANTI_ROSS = True
+MAGIC_ROSS = False
 #PLUGINS = [
 #    'slackbot.plugins',
 #    'mybot.plugins',
@@ -88,10 +88,10 @@ def morning(message):
 # Revamped roll function. Checking for + and - modifiers at the end. Maybe separate functions per scenario?
 @listen_to('[dD]\d+')
 def roll(message):
-    if (re.search('(\d+)?[dD](\d+[\+-])?\d+$',tx(message))): 
+    if (re.search('\\b(\d+)?[dD](\d+[\+-])?\d+\\b',tx(message))): 
         resString = None
         total = 0
-        catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
+        catch = re.findall('\\b(\d+)?[dD]((\d+)([\+-]))?(\d+)\\b',tx(message)).pop(0)
         ONE_TRIG = False
         
 
@@ -163,10 +163,10 @@ def roll(message):
             elif (getBuff(catch) and getMod(catch) > MAX_MOD):
                 message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
             else:
-                if(ANTI_ROSS and getSides(catch)==20 and not getBuff(catch) and re.search('[rR][oO][sS][sS]',tx(message))):
+                if(MAGIC_ROSS and getSides(catch)==20 and not getBuff(catch) and re.search('[rR][oO][sS][sS]',tx(message))):
                     resString = 'Legendary roll! Nat 20!'
                     print ("Anti ross:")
-                    print (ANTI_ROSS)
+                    print (MAGIC_ROSS)
                     print (" getSides(catch):")
                     print (getSides(catch))
                     print (" Message:")
