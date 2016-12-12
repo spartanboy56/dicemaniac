@@ -6,7 +6,7 @@ import inspect
 import sys
 import re
 import random
-import pyowm
+# import pyowm
 
 sys.path.append(dirname("/home/jbird/dicemaniac/"))
 # to get the slackbot_settings.py file that contains the API token
@@ -20,7 +20,7 @@ MAX_MOD = 200
 TOTAL_FRONT = False
 #
 # some joke values, hidden from public view
-ANTI_ROSS = True
+MAGIC_ROSS = False
 #PLUGINS = [
 #    'slackbot.plugins',
 #    'mybot.plugins',
@@ -84,10 +84,10 @@ def relevant(message):
 # Revamped roll function. Checking for + and - modifiers at the end. Maybe separate functions per scenario?
 @listen_to('[dD]\d+')
 def roll(message):
-    if (re.search('(\d+)?[dD](\d+[\+-])?\d+$',tx(message))): 
+    if (re.search('\\b(\d+)?[dD](\d+[\+-])?\d+\\b',tx(message))): 
         resString = None
         total = 0
-        catch = re.findall('(\d+)?[dD]((\d+)([\+-]))?(\d+)$',tx(message)).pop(0)
+        catch = re.findall('\\b(\d+)?[dD]((\d+)([\+-]))?(\d+)\\b',tx(message)).pop(0)
         ONE_TRIG = False
         
 
@@ -95,13 +95,20 @@ def roll(message):
 #Created seperate roller function because it was repeated code
         def roller(dice, sides, buff, mod, total, legend):
             results = []
-            for i in range(0,dice):
+            if(dice):
+                for i in range(0,dice):
+                    roll = random.randrange(1,sides+1)
+                    results.append(roll)
+                    total += roll
+            else:
                 roll = random.randrange(1,sides+1)
                 results.append(roll)
                 total += roll
             resString = ', '.join(map(str,results))
-            if(total == dice*sides):
+            if(dice and total == dice*sides):
                 legend = 'Legendary rolls! '
+            elif(not dice and total == sides):
+                legend = 'Legendary roll! Nat '
             if (buff == '+'):
                 total += mod
             elif (buff == '-'):
@@ -152,8 +159,14 @@ def roll(message):
             elif (getBuff(catch) and getMod(catch) > MAX_MOD):
                 message.reply("Can't have that big of a mod, I'm afraid. Try something lower.")
             else:
-                if(ANTI_ROSS and getSides(catch)==20 and re.search('[rR][oO][sS][sS]',tx(message))):
-                    result = 20
+                if(MAGIC_ROSS and getSides(catch)==20 and not getBuff(catch) and re.search('[rR][oO][sS][sS]',tx(message))):
+                    resString = 'Legendary roll! Nat 20!'
+                    print ("Anti ross:")
+                    print (MAGIC_ROSS)
+                    print (" getSides(catch):")
+                    print (getSides(catch))
+                    print (" Message:")
+                    print (tx(message))
                 #elif (getSides(catch)==2 and not getBuff(catch)):
                 #    if (random.randrange(1,3) == 1):
                 #        result = 'Heads!'
