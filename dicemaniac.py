@@ -81,10 +81,6 @@ def summerchild(message):
 def relevant(message):
     message.reply('I no work yet!')
 
-@listen_to('morning' or 'good morning', re.IGNORECASE)
-def morning(message):
-    message.reply('Good morning!')
-
 # Revamped roll function. Checking for + and - modifiers at the end. Maybe separate functions per scenario?
 @listen_to('[dD]\d+')
 def roll(message):
